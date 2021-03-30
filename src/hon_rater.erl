@@ -1,5 +1,5 @@
 %%%-----------------------------------------------------------------------------
-%%% @copyright (C) 2011-2020, 2600Hz
+%%% @copyright (C) 2011-2021, 2600Hz
 %%% @doc Given a rate_req, find appropriate rate for the call
 %%% @author James Aimonetti
 %%%
@@ -185,7 +185,8 @@ rate_resp(Rate, RateReq) ->
 should_update_callee_id(?NE_BINARY = AccountId) ->
     case kzd_accounts:fetch(AccountId) of
         {'ok', AccountDoc} ->
-            kzd_accounts:caller_id_options_show_rate(AccountDoc, 'false');
+            Options = kzd_accounts:caller_id_options(AccountDoc),
+            kzd_caller_id_options:show_rate(Options, 'false');
         {'error', _R} ->
             lager:debug("failed to load account ~p for update callee id ~p", [AccountId, _R]),
             'false'

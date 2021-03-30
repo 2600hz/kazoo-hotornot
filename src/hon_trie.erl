@@ -1,5 +1,5 @@
 %%%-----------------------------------------------------------------------------
-%%% @copyright (C) 2011-2020, 2600Hz
+%%% @copyright (C) 2011-2021, 2600Hz
 %%% @doc Rater whapp; send me a DID, get a rate back.
 %%% ```
 %%% (Words * Bytes/Word) div (Prefixes) ~= Bytes per Prefix
@@ -76,7 +76,9 @@ trie_proc_name(Ratedeck) ->
 match_did(ToDID, AccountId) ->
     match_did(ToDID, AccountId, ?KZ_RATES_DB).
 
--spec match_did(kz_term:ne_binary(), kz_term:api_ne_binary(), kz_term:api_ne_binary()) -> match_return().
+-spec match_did(kz_term:ne_binary(), kz_term:api_ne_binary(), kz_term:api_ne_binary()) ->
+          {'ok', kz_term:ne_binaries()} |
+          {'error', match_error()}.
 match_did(ToDID, _AccountId, RatedeckId) ->
     ProcName = trie_proc_name(RatedeckId),
 
@@ -86,11 +88,15 @@ match_did(ToDID, _AccountId, RatedeckId) ->
     end.
 -else.
 
--spec match_did(kz_term:ne_binary(), kz_term:api_ne_binary()) -> match_return().
+-spec match_did(kz_term:ne_binary(), kz_term:api_ne_binary()) ->
+          {'ok', kzd_rates:docs()} |
+          {'error', match_error()}.
 match_did(ToDID, AccountId) ->
     match_did(ToDID, AccountId, 'undefined').
 
--spec match_did(kz_term:ne_binary(), kz_term:api_ne_binary(), kz_term:api_ne_binary()) -> match_return().
+-spec match_did(kz_term:ne_binary(), kz_term:api_ne_binary(), kz_term:api_ne_binary()) ->
+          {'ok', kzd_rates:docs()} |
+          {'error', match_error()}.
 match_did(ToDID, AccountId, RatedeckId) ->
     Ratedeck = hon_util:account_ratedeck(AccountId, RatedeckId),
     ProcName = trie_proc_name(Ratedeck),

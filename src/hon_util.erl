@@ -1,5 +1,5 @@
 %%%-----------------------------------------------------------------------------
-%%% @copyright (C) 2012-2020, 2600Hz
+%%% @copyright (C) 2012-2021, 2600Hz
 %%% @doc
 %%% @author James Aimonetti
 %%%
@@ -271,7 +271,7 @@ options_match([], []) -> 'true';
 options_match([], _) -> 'true';
 options_match(RateOptions, RouteOptions) ->
     lists:all(fun(RouteOption) ->
-                      props:get_value(RouteOption, RateOptions, 'false') =/= 'false'
+                      lists:member(RouteOption, RateOptions)
               end
              ,RouteOptions
              ).
