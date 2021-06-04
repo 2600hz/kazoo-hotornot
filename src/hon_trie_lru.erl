@@ -49,16 +49,10 @@
                ,start_time = kz_time:start_time() :: kz_time:start_time()
                ,expires_s :: pos_integer()
                }).
--define(STATE_READY(Trie, RatedeckDb, CheckRef)
-       ,#state{trie=Trie
-              ,ratedeck_db=RatedeckDb
-              ,check_ref=CheckRef
-              }
-       ).
+-type state() :: #state{}.
 
 -define(CHECK_MSG(ExpiresS), {'check_trie', ExpiresS}).
 
--type state() :: #state{}.
 -type rate_entry() :: {kz_term:ne_binary(), kz_time:gregorian_seconds()}.
 -type rate_entries() :: [rate_entry()].
 
@@ -103,16 +97,26 @@ start_expires_check_timer(ExpiresS) ->
 -spec handle_call(any(), kz_term:pid_ref(), state()) ->
           {'noreply', state()} |
           {'reply', 'ok' | match_return(), state()}.
-handle_call({'match_did', DID}, _From, ?STATE_READY(Trie, RatedeckDb, CheckRef)=State) ->
-    io:format("~pms elapsed~n", [kz_time:elapsed_ms(State#state.start_time)]),
-    {UpdatedTrie, Resp} = match_did_in_trie(DID, Trie, State#state.expires_s),
+handle_call({'match_did', DID}, _From
+           ,#state{trie=Trie
+                  ,start_time=StartTime
+                  ,expires_s=ExpiresS
+                  }=State
+           ) ->
+    io:format("~pms elapsed~n", [kz_time:elapsed_ms(StartTime)]),
+    {UpdatedTrie, Resp} = match_did_in_trie(DID, Trie, ExpiresS),
     io:format("  matched ~p: ~p~n  trie: ~p~n", [DID, Resp, trie:to_list(UpdatedTrie)]),
-    {'reply', Resp, State?STATE_READY(UpdatedTrie, RatedeckDb, CheckRef)};
-handle_call({'cache_rates', Rates}, _From, ?STATE_READY(Trie, RatedeckDb, CheckRef)=State) ->
-    io:format("~pms elapsed~n", [kz_time:elapsed_ms(State#state.start_time)]),
+    {'reply', Resp, State#state{trie=UpdatedTrie}};
+
+handle_call({'cache_rates', Rates}, _From
+           ,#state{trie=Trie
+                  ,start_time=StartTime
+                  }=State
+           ) ->
+    io:format("~pms elapsed~n", [kz_time:elapsed_ms(StartTime)]),
     UpdatedTrie = handle_caching_of_rates(Trie, Rates),
     io:format("  after caching rates: ~p~n", [trie:to_list(UpdatedTrie)]),
-    {'reply', 'ok', State?STATE_READY(UpdatedTrie, RatedeckDb, CheckRef)};
+    {'reply', 'ok', State#state{trie=UpdatedTrie}};
 handle_call(_Req, _From, State) ->
     {'noreply', State}.
 
@@ -125,12 +129,17 @@ handle_cast(_Req, State) ->
 
 -spec handle_info(any(), state()) -> {'noreply', state()}.
 handle_info({'timeout', CheckRef, ?CHECK_MSG(ExpiresS)}
-           ,?STATE_READY(Trie, RatedeckDb, CheckRef)=State
+           ,#state{trie=Trie
+                  ,check_ref=CheckRef
+                  ,start_time=StartTime
+                  }=State
            ) ->
-    io:format("~pms elapsed~n", [kz_time:elapsed_ms(State#state.start_time)]),
+    io:format("~pms elapsed~n", [kz_time:elapsed_ms(StartTime)]),
     UpdatedTrie = check_expired_entries(Trie, ExpiresS),
     io:format("  updated trie: ~p~n", [trie:to_list(UpdatedTrie)]),
-    {'noreply', State?STATE_READY(UpdatedTrie, RatedeckDb, start_expires_check_timer(ExpiresS))};
+    {'noreply', State#state{trie=UpdatedTrie
+                           ,check_ref=start_expires_check_timer(ExpiresS)
+                           }};
 handle_info(_Msg, State) ->
     lager:debug("unhandled message ~p: ~p",[_Msg, State]),
     {'noreply', State}.

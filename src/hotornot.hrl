@@ -7,9 +7,7 @@
 -include_lib("kazoo_documents/include/kzd_ratedeck.hrl").
 
 -define(APP_NAME, <<"hotornot">>).
--define(APP_VERSION, <<"4.0.0">>).
-
--define(CACHE_NAME, 'hotornot_cache').
+-define(APP_VERSION, <<"5.0.0">>).
 
 -type trunking_options() :: kz_term:ne_binaries().
 -type prefix() :: string().

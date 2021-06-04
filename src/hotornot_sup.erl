@@ -23,9 +23,7 @@
 
 -define(SERVER, ?MODULE).
 
--define(CHILDREN, [?CACHE(?CACHE_NAME)
-                  ,?WORKER('hotornot_listener')
-                  ]).
+-define(CHILDREN, [?WORKER('hotornot_listener')]).
 
 %%==============================================================================
 %% API functions
