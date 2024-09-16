@@ -1,4 +1,4 @@
-# Hot or Not: *Call rating*
+# Call rating
 
 This application serves `rate_req` AMQP requests.
 
@@ -34,7 +34,7 @@ Each rate is a separate document:
 }
 ```
 
-Schema for these rate documents is described in the [rates](../../crossbar/doc/rates.md#schema) reference doc.
+Schema object for these rate documents is described in the [Rates API](https://docs.2600hz.com/git/2600hz/kazoo-crossbar/doc/rates.md#schema) reference doc.
 
 ## System Configuration
 
